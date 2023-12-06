@@ -33,9 +33,22 @@ run(){
     # Copy in goss
     cp "${GOSS_PATH}" "$tmp_dir/goss"
     chmod 755 "$tmp_dir/goss"
-    [[ -e "${GOSS_FILES_PATH}/${GOSS_FILE:-goss.yaml}" ]] && cp "${GOSS_FILES_PATH}/${GOSS_FILE:-goss.yaml}" "$tmp_dir/goss.yaml" && chmod 644 "$tmp_dir/goss.yaml"
-    [[ -e "${GOSS_FILES_PATH}/goss_wait.yaml" ]] && cp "${GOSS_FILES_PATH}/goss_wait.yaml" "$tmp_dir" && chmod 644 "$tmp_dir/goss_wait.yaml"
-    [[ -n "${GOSS_VARS}" ]] && [[ -e "${GOSS_FILES_PATH}/${GOSS_VARS}" ]] && cp "${GOSS_FILES_PATH}/${GOSS_VARS}" "$tmp_dir" && chmod 644 "$tmp_dir/${GOSS_VARS}"
+    [[ -e "${GOSS_FILES_PATH}/${GOSS_FILE:-goss.yaml}" ]] \
+        && cp "${GOSS_FILES_PATH}/${GOSS_FILE:-goss.yaml}" "$tmp_dir/goss.yaml" \
+        && chmod 644 "$tmp_dir/goss.yaml"
+    [[ -e "${GOSS_FILES_PATH}/goss_wait.yaml" ]] \
+        && cp "${GOSS_FILES_PATH}/goss_wait.yaml" "$tmp_dir" \
+        && chmod 644 "$tmp_dir/goss_wait.yaml"
+    [[ -n "${GOSS_VARS}" ]] \
+        && [[ -e "${GOSS_FILES_PATH}/${GOSS_VARS}" ]] \
+        && cp "${GOSS_FILES_PATH}/${GOSS_VARS}" "$tmp_dir" \
+        && chmod 644 "$tmp_dir/${GOSS_VARS}"
+    # copy template directory
+    [[ -d "${GOSS_FILES_PATH}/templates" ]] \
+        && cp -rp "${GOSS_FILES_PATH}/templates" "$tmp_dir"
+    # copy custom scripts
+    [[ -d "${GOSS_FILES_PATH}/scripts" ]] \
+        && cp -rp "${GOSS_FILES_PATH}/scripts" "$tmp_dir"
 
     # Switch between mount or cp files strategy
     GOSS_FILES_STRATEGY=${GOSS_FILES_STRATEGY:="mount"}
