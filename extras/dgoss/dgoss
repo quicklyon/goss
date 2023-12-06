@@ -49,6 +49,10 @@ run(){
     # copy custom scripts
     [[ -d "${GOSS_FILES_PATH}/scripts" ]] \
         && cp -rp "${GOSS_FILES_PATH}/scripts" "$tmp_dir"
+    # copy other yaml file
+    [[ -e "${GOSS_FILES_PATH}/${GOSS_OTHER_YAML}" ]] \
+        && cp "${GOSS_FILES_PATH}/${GOSS_OTHER_YAML}" "$tmp_dir" \
+        && chmod 644 "$tmp_dir/${GOSS_OTHER_YAML}"
 
     # Switch between mount or cp files strategy
     GOSS_FILES_STRATEGY=${GOSS_FILES_STRATEGY:="mount"}
@@ -108,12 +112,12 @@ case "$1" in
         if [[ -e "${GOSS_FILES_PATH}/goss_wait.yaml" ]]; then
             info "Found goss_wait.yaml, waiting for it to pass before running tests"
             if [[ -z "${GOSS_VARS}" ]]; then
-                if ! $CONTAINER_RUNTIME exec "$id" sh -c "/goss/goss -g /goss/goss_wait.yaml validate $GOSS_WAIT_OPTS"; then
+                if ! $CONTAINER_RUNTIME exec -w /goss "$id" sh -c "/goss/goss -g /goss/goss_wait.yaml validate $GOSS_WAIT_OPTS"; then
                     $CONTAINER_RUNTIME logs "$id" >&2
                     error "goss_wait.yaml never passed"
                 fi
             else
-                if ! $CONTAINER_RUNTIME exec "$id" sh -c "/goss/goss -g /goss/goss_wait.yaml --vars='/goss/${GOSS_VARS}' validate $GOSS_WAIT_OPTS"; then
+                if ! $CONTAINER_RUNTIME exec -w /goss "$id" sh -c "/goss/goss -g /goss/goss_wait.yaml --vars='/goss/${GOSS_VARS}' validate $GOSS_WAIT_OPTS"; then
                     $CONTAINER_RUNTIME logs "$id" >&2
                     error "goss_wait.yaml never passed"
                 fi
@@ -127,9 +131,10 @@ case "$1" in
         fi
         info "Running Tests"
         if [[ -z "${GOSS_VARS}" ]]; then
-            $CONTAINER_RUNTIME exec "$id" sh -c "/goss/goss -g /goss/goss.yaml validate $GOSS_OPTS"
+            $CONTAINER_RUNTIME exec -w /goss "$id" sh -c "/goss/goss -g /goss/goss.yaml validate $GOSS_OPTS"
         else
-            $CONTAINER_RUNTIME exec "$id" sh -c "/goss/goss -g /goss/goss.yaml --vars='/goss/${GOSS_VARS}' validate $GOSS_OPTS"
+            sleep "${DEBUG:-0}"
+            $CONTAINER_RUNTIME exec -w /goss "$id" sh -c "/goss/goss -g /goss/goss.yaml --vars='/goss/${GOSS_VARS}' validate $GOSS_OPTS"
         fi
         ;;
     edit)
